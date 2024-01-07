@@ -10,7 +10,7 @@ def create_tables(conn, cursor):
         # TABLE AGENT
         cursor.execute("""CREATE TABLE agent (
                     id INTEGER PRIMARY KEY,
-                    cuil TEXT,
+                    cuil TEXT UNIQUE,
                     first TEXT,
                     last TEXT,
                     admission TEXT
@@ -22,13 +22,14 @@ def create_tables(conn, cursor):
                     cuil TEXT,
                     start TEXT,
                     end TEXT,
+                    days_btw INTEGER,
                     note TEXT
                     )""")
 
         # TABLE days_left
         cursor.execute("""CREATE TABLE days_left (
                     id INTEGER PRIMARY KEY,
-                    cuil TEXT,
+                    cuil TEXT UNIQUE,
                     year_2022 INTEGER,
                     year_2023 INTEGER,
                     year_2024 INTEGER,
