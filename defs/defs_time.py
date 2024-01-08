@@ -26,14 +26,14 @@ def years_of_work(f: str):
     dif = today - date
     return dif.days // 365
 
-# return 5 = saturday / 6 = sunday
+#  6 = sunday
 def Weekend_check(f: str):
     date = datetime.strptime(f, r'%Y-%m-%d')
     week_day = date.weekday()
-    if week_day == 5 or week_day == 6:
-        return week_day
+    if week_day == 6:
+        return date.strftime(r'%Y-%m-%d')
     else:
-        raise ValueError('No es fin de semana')
+        raise ValueError('La fecha del fin de la licencia no es Domingo')
 
 # return boolean
 def f_check(f: str):
@@ -52,7 +52,7 @@ def days_between(f1: str, f2: str):
     date_2 = datetime.strptime(f2, r'%Y-%m-%d')
     dif = date_2 - date_1
     days = dif.days
-    return days
+    return days + 1
 
 # return dict
 def days_origin(admission: str, years: list):

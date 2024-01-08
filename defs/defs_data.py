@@ -54,7 +54,7 @@ def push_lisense(conn, cursor, obj: license):
     with conn:
         cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
-def fetch_license(conn,cursor, cuil: str, date: str):
+def fetch_license(conn,cursor, cuil: str = None, date: str = None):
     with conn:
         if not cuil == None:
             cursor.execute("SELECT * FROM license WHERE cuil LIKE ?", ('%' + cuil + '%',))
