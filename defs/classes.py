@@ -36,3 +36,18 @@ class agent():
         }
         z.update(self.days_origin)
         return z
+
+class days_available():
+    def __init__(self, license: list, agent: tuple):       
+        self.days_of = [{'date': row[0], 'days': row[1]} for row in license]
+        self.days_of = sorted(self.days_of, key=lambda x: x['date'])
+
+        self.years = range(2021,2027)
+        self.agent_days = [{f'year_{str(year)}': value} for value, year in zip(agent, self.years)]
+
+        self.days_left = self.days_of.copy()
+        
+    def take_days(self):
+            pass
+    
+days_available([('2023-06-05', 15), ('2023-11-14', 15), ('2020-02-06', 5)],(0,0,0,8,0,0,0))

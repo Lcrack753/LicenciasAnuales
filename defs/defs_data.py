@@ -1,5 +1,6 @@
 import sqlite3
 from classes import license, agent
+from defs_time import f_check
 
 def connect_start(database_path):
     conn = sqlite3.connect(database_path)
@@ -120,6 +121,15 @@ def delete_license(conn,cursor,obj: license, all_instance_of_cuil: bool = False)
                         start = :start AND
                         end = :end""",
                         obj.to_dict())
+
+def calculate_days_avalible(conn,cursor, cuil: str):
+    with conn:
+        cursor.execute("""SELECT start FROM license WHERE cuil = ?""", (cuil,))
+        rows = cursor.fetchall()
+        dates_order = []
+        for row in rows:
+            dates_order.append(row[0])
+        
 
 # Creacion de la base de datos
 if __name__ == "__main__":

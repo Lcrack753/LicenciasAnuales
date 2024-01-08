@@ -78,5 +78,5 @@ def orderby_date(dates: list):
     sorted_dates_objects = sorted(date_objects)
     sorted_dates = []
     for date in sorted_dates_objects:
-        sorted_dates.append(f'{date.year}-{date.month}-{date.day}')
+        sorted_dates.append(date.strftime(r'%Y-%m-%d'))
     return sorted_dates
