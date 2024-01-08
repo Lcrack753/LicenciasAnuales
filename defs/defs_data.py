@@ -1,6 +1,5 @@
 import sqlite3
 from classes import license, agent
-from defs_time import days_origin
 
 def connect_start(database_path):
     conn = sqlite3.connect(database_path)
@@ -34,24 +33,24 @@ def create_tables(conn, cursor):
                     note TEXT
                     )""")
 
-        # # TABLE days_left
-        # cursor.execute("""CREATE TABLE days_available (
-        #             id INTEGER PRIMARY KEY,
-        #             cuil TEXT UNIQUE,
-        #             year_2021 INTEGER,
-        #             year_2022 INTEGER,
-        #             year_2023 INTEGER,
-        #             year_2024 INTEGER,
-        #             year_2025 INTEGER,
-        #             year_2026 INTEGER
-        #             )""")
-
 def connect_end(conn):
     conn.close()
 
 # LISENSE
 def push_lisense(conn, cursor, obj: license):
     with conn:
+        cursor.execute("SELECT * FROM agent WHERE cuil = ?", (obj.cuil,))
+        if cursor.fetchone() is None:
+            raise ValueError('cuil doesnt exist in agent table')
+        
+        cursor.execute("""SELECT * FROM license WHERE
+                        cuil = :cuil AND
+                        (start = :start OR
+                        end = :end)""",
+                        obj.to_dict())
+        if cursor.fetchone():
+            raise ValueError('repited value in license')
+        
         cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
 def fetch_license(conn,cursor, cuil: str = None, date: str = None):
@@ -107,6 +106,20 @@ def fetch_agent(conn, cursor, query = None, select_days: bool = False):
             return cursor.fetchall()
         cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query", {'query': '%' + query + '%'})
         return cursor.fetchall()
+
+# delete
+def delete_license(conn,cursor,obj: license, all_instance_of_cuil: bool = False):
+    with conn:
+        if all_instance_of_cuil == True:
+            cursor.execute("""DELETE FROM license WHERE
+                        cuil = :cuil""",
+                        obj.to_dict())
+        else:
+            cursor.execute("""DELETE FROM license WHERE
+                        cuil = :cuil AND
+                        start = :start AND
+                        end = :end""",
+                        obj.to_dict())
 
 # Creacion de la base de datos
 if __name__ == "__main__":

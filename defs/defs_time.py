@@ -35,7 +35,7 @@ def Weekend_check(f: str):
     else:
         raise ValueError('La fecha del fin de la licencia no es Domingo')
 
-# return boolean
+
 def f_check(f: str):
     formats = [r'%d/%m/%Y', r'%d-%m-%Y', r'%d.%m.%Y', r'%Y-%m-%d']
     for date_format in formats:
@@ -45,6 +45,8 @@ def f_check(f: str):
         except ValueError:
             pass
     raise ValueError("Fecha no válida")
+
+
 
 # return string
 def days_between(f1: str, f2: str):
@@ -67,3 +69,14 @@ def days_origin(admission: str, years: list):
             days = days_of_licence(years_of_work(admission))
         days_per_years[f'year_{year}'] = days
     return days_per_years
+
+def orderby_date(dates: list):
+    try:
+        date_objects = [datetime.strptime(date, r'%Y-%m-%d') for date in dates]
+    except ValueError:
+        print('incorrect dates')
+    sorted_dates_objects = sorted(date_objects)
+    sorted_dates = []
+    for date in sorted_dates_objects:
+        sorted_dates.append(f'{date.year}-{date.month}-{date.day}')
+    return sorted_dates
