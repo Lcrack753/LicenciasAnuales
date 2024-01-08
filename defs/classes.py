@@ -1,12 +1,10 @@
-from defs.defs_time import *
+from defs_time import *
 
-class vacation():
+class license():
     def __init__(self, cuil: str, start: str, end: str, note: str):
-        if not f_check(start) or not f_check(end):
-            raise ValueError("Las fechas proporcionadas no son válidas.")
         self.cuil = cuil
-        self.start = start
-        self.end = end
+        self.start = f_check(start)
+        self.end = f_check(end)
         self.days_btw = days_between(self.start, self.end)
         self.note = note
     
@@ -19,5 +17,3 @@ class vacation():
             'note': self.note
         }
         return v
-    
-    

@@ -1,6 +1,7 @@
 import sqlite3
+from classes import license
 
-def connect_to_database(database_path):
+def connect_start(database_path):
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
     return conn, cursor
@@ -17,7 +18,7 @@ def create_tables(conn, cursor):
                     )""")
 
         # TABLE LICENSES
-        cursor.execute("""CREATE TABLE licenses (
+        cursor.execute("""CREATE TABLE license (
                     id INTEGER PRIMARY KEY,
                     cuil TEXT,
                     start TEXT,
@@ -37,7 +38,33 @@ def create_tables(conn, cursor):
                     year_2026 INTEGER
                     )""")
 
-def close_connection(conn):
+def connect_end(conn):
     conn.close()
 
+# from classes import lisence
+def push_lisense(conn, cursor, obj: license):
+    with conn:
+        cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
+def fetch_license(conn,cursor, cuil: str, date: str):
+    with conn:
+        if not cuil == None:
+            cursor.execute("SELECT * FROM license WHERE cuil LIKE ?", ('%' + cuil + '%',))
+        elif not date == None:
+            cursor.execute("SELECT * FROM license WHERE start LIKE ?", ('%' + date + '%',))
+        else:
+            cursor.execute("SELECT * FROM license")
+        
+        rows = cursor.fetchall()
+        return rows
+    
+    
+# Creacion de la base de datos
+if __name__ == "__main__":
+    try:
+        conn, cursor = connect_start('./data/dataBase.db')
+        create_tables(conn,cursor)
+        connect_end(conn)
+    except sqlite3.OperationalError:
+        print('database already exist')
+    

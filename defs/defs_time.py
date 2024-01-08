@@ -37,23 +37,19 @@ def Weekend_check(f: str):
 
 # return boolean
 def f_check(f: str):
-    try:
-        datetime.strptime(f, r'%d/%m/%Y')
-        print('Fecha Valida')
-        return True
-    except ValueError:
-        print('Fecha No Valida')
-        return False
+    formats = [r'%d/%m/%Y', r'%d-%m-%Y', r'%d.%m.%Y', r'%Y-%m-%d']
+    for date_format in formats:
+        try:
+            date = datetime.strptime(f, date_format)
+            return date.strftime(r'%Y-%m-%d')  # Normalizar la fecha al formato 'YYYY-MM-DD'
+        except ValueError:
+            pass
+    raise ValueError("Fecha no válida")
 
 # return string
 def days_between(f1: str, f2: str):
-    date_1 = datetime.strptime(f1, r'%d/%m/%Y')
-    date_2 = datetime.strptime(f2, r'%d/%m/%Y')
+    date_1 = datetime.strptime(f1, r'%Y-%m-%d')
+    date_2 = datetime.strptime(f2, r'%Y-%m-%d')
     dif = date_2 - date_1
     days = dif.days
     return days
-
-
-
-
-print(years_of_work('4/01/2020'))
