@@ -105,11 +105,7 @@ def fetch_agent(conn, cursor, query = None, select_days: bool = False):
         if query is None:
             cursor.execute(f"SELECT {columns} FROM agent")
             return cursor.fetchall()
-        try:
-            query = int(query)
-            cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE ?", ('%' + str(query) + '%',))
-        except ValueError:
-            cursor.execute(f"SELECT {columns} FROM agent WHERE first LIKE :query OR last LIKE :query", {'query': '%' + query + '%'})
+        cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query", {'query': '%' + query + '%'})
         return cursor.fetchall()
 
 # Creacion de la base de datos
