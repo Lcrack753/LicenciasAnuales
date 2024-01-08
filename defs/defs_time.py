@@ -3,7 +3,7 @@ from datetime import datetime
 
 # return days
 def proportion_oneyear(f: str):
-    date = datetime.strptime(f, r'%d/%m/%Y')
+    date = datetime.strptime(f, r'%Y-%m-%d')
     months = 13 - date.month
     days = (months * 20) // 12
     return days
@@ -21,19 +21,19 @@ def days_of_licence(years: int):
 
 # return years
 def years_of_work(f: str):
-    date = datetime.strptime(f, r'%d/%m/%Y')
+    date = datetime.strptime(f, r'%Y-%m-%d')
     today = datetime.now()
     dif = today - date
     return dif.days // 365
 
 # return 5 = saturday / 6 = sunday
 def Weekend_check(f: str):
-    date = datetime.strptime(f, r'%d/%m/%Y')
+    date = datetime.strptime(f, r'%Y-%m-%d')
     week_day = date.weekday()
     if week_day == 5 or week_day == 6:
         return week_day
     else:
-        return False
+        raise ValueError('No es fin de semana')
 
 # return boolean
 def f_check(f: str):
@@ -53,3 +53,17 @@ def days_between(f1: str, f2: str):
     dif = date_2 - date_1
     days = dif.days
     return days
+
+# return dict
+def days_origin(admission: str, years: list):
+    date = datetime.strptime(admission, r'%Y-%m-%d')
+    days_per_years= dict()
+    for year in years:
+        if date.year > year:
+            days = 0
+        elif date.year == year:
+            days = proportion_oneyear(admission)
+        else:
+            days = days_of_licence(years_of_work(admission))
+        days_per_years[f'year_{year}'] = days
+    return days_per_years

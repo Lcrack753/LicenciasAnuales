@@ -1,14 +1,12 @@
-from classes import license
+from classes import license, agent
 from defs_data import *
 
-lucio = license('20448919936', '05/02/2023', '25/02/2023', '-')
+lucio = agent('204485984','Roberto','Carnero','01/08/2023')
 
 conn, cursor = connect_start('./data/dataBase.db')
-push_lisense(conn, cursor, lucio)
-push_lisense(conn, cursor, lucio)
-push_lisense(conn, cursor, lucio)
-push_lisense(conn, cursor, lucio)
-push_lisense(conn, cursor, lucio)
 
-for row in fetch_license(conn, cursor,cuil=None,date='2023'):
-    print(row)
+# push_agent(conn,cursor,lucio)
+update_days_origin(conn,cursor,'','2024-08-02')
+print(fetch_agent(conn,cursor,select_days=True))
+connect_end(conn)
+
