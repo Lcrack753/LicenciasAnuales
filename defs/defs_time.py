@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # return days
@@ -80,3 +80,16 @@ def orderby_date(dates: list):
     for date in sorted_dates_objects:
         sorted_dates.append(date.strftime(r'%Y-%m-%d'))
     return sorted_dates
+
+def is_less(f1, f2):
+    date_1 = datetime.strptime(f1, r'%Y-%m-%d')
+    date_2 = datetime.strptime(f2, r'%Y-%m-%d')
+    if date_1  < date_2:
+        return True
+    else:
+        return False
+    
+def add_years(f, years: int):
+    date = datetime.strptime(f, r'%Y-%m-%d')
+    new_date = date + timedelta(days=365 * years)
+    return new_date.strftime(r'%Y-%m-%d')

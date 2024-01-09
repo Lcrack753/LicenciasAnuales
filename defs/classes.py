@@ -39,15 +39,36 @@ class agent():
 
 class days_available():
     def __init__(self, license: list, agent: tuple):       
-        self.days_of = [{'date': row[0], 'days': row[1]} for row in license]
-        self.days_of = sorted(self.days_of, key=lambda x: x['date'])
+        self.days_of = [[row[0], row[1]] for row in license]
+        self.days_of = sorted(self.days_of, key=lambda x: x[0])
 
         self.years = range(2021,2027)
-        self.agent_days = [{f'year_{str(year)}': value} for value, year in zip(agent, self.years)]
+        self.agent_days = [[f'{str(year)}-12-01', value] for value, year in zip(agent, self.years)]
 
-        self.days_left = self.days_of.copy()
+        self.days_taken = self.days_of.copy()
+        self.days_left = self.agent_days.copy()
         
+        print(self.days_taken)
+        print(self.days_left)
+        self.take_days()
+        print('------------')
+        print(self.days_taken)
+        print(self.days_left)
     def take_days(self):
-            pass
-    
-days_available([('2023-06-05', 15), ('2023-11-14', 15), ('2020-02-06', 5)],(0,0,0,8,0,0,0))
+
+        for i in range(0, len(self.days_left)):
+            for j in range(0, len(self.days_taken)):
+                if is_less(self.days_taken[j][0],self.days_left[i][0]):
+                    continue
+                elif not is_less(self.days_taken[j][0],add_years(self.days_left[i][0], 2)):
+                    continue
+                while True:
+                    if self.days_taken[j][1] == 0 or self.days_left[i][1] == 0:
+                        break
+                    self.days_taken[j][1] -= 1
+                    self.days_left[i][1] -= 1
+            #     print('*******')
+            # print('+++++++++++')
+                
+                
+days_available([('2020-12-06',10),('2022-05-17',10), ('2023-05-17',15),('2026-06-17',20)],(15,20,20,20,20,20,20))
