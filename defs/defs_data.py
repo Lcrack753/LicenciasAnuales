@@ -7,7 +7,7 @@ def connect_start(database_path):
     cursor = conn.cursor()
     return conn, cursor
 
-def create_tables(conn, cursor,year: int):
+def create_tables(conn, cursor):
     with conn:
         # TABLE AGENT
         cursor.execute("""CREATE TABLE agent (
@@ -15,13 +15,7 @@ def create_tables(conn, cursor,year: int):
                     cuil TEXT UNIQUE,
                     first TEXT,
                     last TEXT,
-                    admission TEXT,
-                    year_2021 INTEGER,
-                    year_2022 INTEGER,
-                    year_2023 INTEGER,
-                    year_2024 INTEGER,
-                    year_2025 INTEGER,
-                    year_2026 INTEGER
+                    admission TEXT
                     )""")
 
         # TABLE LICENSES
@@ -54,7 +48,7 @@ def push_lisense(conn, cursor, obj: license):
         
         cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
-def fetch_license(conn,cursor, cuil: str = None, date: str = None):
+def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = False):
     with conn:
         if not cuil == None:
             cursor.execute("SELECT * FROM license WHERE cuil LIKE ?", ('%' + cuil + '%',))
@@ -64,7 +58,11 @@ def fetch_license(conn,cursor, cuil: str = None, date: str = None):
             cursor.execute("SELECT * FROM license")
         
         rows = cursor.fetchall()
+        if reduce == True:
+            return [[row[2], row[4]] for row in rows]
         return rows
+
+
 
 
 # AGENT
@@ -94,19 +92,18 @@ def update_days_origin(conn, cursor, cuil: str, admission):
 def push_agent(conn, cursor, obj: agent):
     with conn:
         cursor.execute("INSERT INTO agent (cuil, first, last, admission) VALUES (:cuil, :first, :last, :admission)", obj.to_dict())
-        update_days_origin(conn,cursor,obj.cuil,obj.admission)
+        # update_days_origin(conn,cursor,obj.cuil,obj.admission)
 
-def fetch_agent(conn, cursor, query = None, select_days: bool = False):
+
+def fetch_agent(conn, cursor, query = None):
     with conn:
-        if select_days:
-            columns = '*'
-        else:
-            columns = 'id, cuil, first, last, admission'
+        columns = 'id, cuil, first, last, admission'
         if query is None:
             cursor.execute(f"SELECT {columns} FROM agent")
             return cursor.fetchall()
         cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query", {'query': '%' + query + '%'})
         return cursor.fetchall()
+
 
 # delete
 def delete_license(conn,cursor,obj: license, all_instance_of_cuil: bool = False):

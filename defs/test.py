@@ -1,19 +1,30 @@
-from classes import license, agent
+from classes import license, agent, days_available
 from defs_data import *
 
-lucio = agent('123456789','Ciro','Heianna','05/01/2022')
+lucio = agent('20448919936','Lucio', 'Carnero','01/08/2022')
+lic1 = license('20448919936','2021-06-26','2021-07-15','-')
+lic2 = license('20448919936','2023-08-06','2023-08-15','-')
+lic3 = license('20448919936','2025-01-07','2025-01-20','-')
 
-lic1 = license('123456789', '15/01/2024', '21/01/2024', '-')
+
 
 conn, cursor = connect_start('./data/dataBase.db')
+days_lucio = days_available(fetch_license(conn,cursor,'2044',reduce=True),lucio.days_origin_to_tuple())
+
+# print(lucio.days_origin_to_tuple())
+print(fetch_license(conn,cursor,'2044',reduce=True))
+print(days_lucio.agent_days)
+print(days_lucio.to_dict())
+
+
 
 # push_agent(conn,cursor,lucio)
 # push_lisense(conn,cursor, lic1)
-# update_days_origin(conn,cursor,'','2024-08-02')
+# push_lisense(conn,cursor, lic2)
+# push_lisense(conn,cursor, lic3)
 
 # delete_license(conn,cursor,lic1)
-print(fetch_license(conn,cursor))
-calculate_days_avalible(conn,cursor, '123456789')
-# print(fetch_agent(conn,cursor,select_days=False,query='4'))
+
+
 connect_end(conn)
 
