@@ -34,41 +34,48 @@ class agent():
             'last': self.last,
             'admission': self.admission,
         }
-        z.update(self.days_origin)
         return z
-
+    
+    def days_origin_to_list(self):
+        z = tuple((self.days_origin[date] for date in self.days_origin.keys()))
+        return z
+    
 class days_available():
     def __init__(self, license: list, agent: tuple):       
         self.days_of = [[row[0], row[1]] for row in license]
         self.days_of = sorted(self.days_of, key=lambda x: x[0])
-
-        self.years = range(2021,2027)
+        
+        self.years = [2021+i for i in range(0,len(agent))]
         self.agent_days = [[f'{str(year)}-12-01', value] for value, year in zip(agent, self.years)]
 
         self.days_taken = self.days_of.copy()
         self.days_left = self.agent_days.copy()
-        
-        print(self.days_taken)
-        print(self.days_left)
         self.take_days()
-        print('------------')
-        print(self.days_taken)
-        print(self.days_left)
+    
     def take_days(self):
-
         for i in range(0, len(self.days_left)):
             for j in range(0, len(self.days_taken)):
                 if is_less(self.days_taken[j][0],self.days_left[i][0]):
                     continue
                 elif not is_less(self.days_taken[j][0],add_years(self.days_left[i][0], 2)):
                     continue
+                
                 while True:
                     if self.days_taken[j][1] == 0 or self.days_left[i][1] == 0:
                         break
                     self.days_taken[j][1] -= 1
-                    self.days_left[i][1] -= 1
-            #     print('*******')
-            # print('+++++++++++')
-                
-                
-days_available([('2020-12-06',10),('2022-05-17',10), ('2023-05-17',15),('2026-06-17',20)],(15,20,20,20,20,20,20))
+                    self.days_left[i][1] -= 1 
+
+    def to_dict(self):
+        z = {}
+        for date in self.days_left:
+            year = date[0].split('-')[0]
+            z.update({f'year_{year}':date[1]})
+        return z
+
+lucio = agent('20448919936','Lucio', 'Carnero','01/08/2022')
+print(lucio.to_dict())
+print(lucio.days_origin)
+print(lucio.days_origin_to_list())
+# test = days_available([('2020-12-06',10),('2022-05-17',10), ('2023-05-17',15),('2026-06-17',20)],(15,20,20))
+# print(test.to_dict())

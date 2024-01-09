@@ -7,7 +7,7 @@ def connect_start(database_path):
     cursor = conn.cursor()
     return conn, cursor
 
-def create_tables(conn, cursor):
+def create_tables(conn, cursor,year: int):
     with conn:
         # TABLE AGENT
         cursor.execute("""CREATE TABLE agent (
