@@ -57,9 +57,10 @@ def days_between(f1: str, f2: str):
     return days + 1
 
 # return dict
-def days_origin(admission: str, years: list):
+def days_origin(admission: str, years: list, to_list: bool = False):
     date = datetime.strptime(admission, r'%Y-%m-%d')
-    days_per_years= dict()
+    days_per_years_dict= dict()
+    days_per_years_list= list()
     for year in years:
         if date.year > year:
             days = 0
@@ -67,8 +68,11 @@ def days_origin(admission: str, years: list):
             days = proportion_oneyear(admission)
         else:
             days = days_of_licence(years_of_work(admission))
-        days_per_years[f'year_{year}'] = days
-    return days_per_years
+        days_per_years_dict[f'{str(year)}-12-01'] = days
+        days_per_years_list.append([f'{str(year)}-12-01', days])
+    if to_list:
+        return days_per_years_list
+    return days_per_years_dict
 
 def orderby_date(dates: list):
     try:

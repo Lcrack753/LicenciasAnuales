@@ -1,5 +1,5 @@
 import sqlite3
-from classes import license, agent
+from classes import License, Agent
 from defs_time import f_check
 
 def connect_start(database_path):
@@ -32,7 +32,7 @@ def connect_end(conn):
     conn.close()
 
 # LISENSE
-def push_lisense(conn, cursor, obj: license):
+def push_lisense(conn, cursor, obj: License):
     with conn:
         cursor.execute("SELECT * FROM agent WHERE cuil = ?", (obj.cuil,))
         if cursor.fetchone() is None:
@@ -76,7 +76,7 @@ def update_days_origin(conn, cursor, cuil: str, admission):
     else:
         first, last = 'temp', 'temp'
 
-    z = agent(cuil, first, last, admission).to_dict()
+    z = Agent(cuil, first, last, admission).to_dict()
 
     with conn:
         cursor.execute("""UPDATE agent SET
@@ -89,7 +89,7 @@ def update_days_origin(conn, cursor, cuil: str, admission):
                         year_2026 = :year_2026 WHERE cuil = :cuil""",
                         z)
 
-def push_agent(conn, cursor, obj: agent):
+def push_agent(conn, cursor, obj: Agent):
     with conn:
         cursor.execute("INSERT INTO agent (cuil, first, last, admission) VALUES (:cuil, :first, :last, :admission)", obj.to_dict())
         # update_days_origin(conn,cursor,obj.cuil,obj.admission)
@@ -106,7 +106,7 @@ def fetch_agent(conn, cursor, query = None):
 
 
 # delete
-def delete_license(conn,cursor,obj: license, all_instance_of_cuil: bool = False):
+def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False):
     with conn:
         if all_instance_of_cuil == True:
             cursor.execute("""DELETE FROM license WHERE
