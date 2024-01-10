@@ -21,12 +21,13 @@ class License():
 
 
 class Agent():
-    def __init__(self, cuil: str, first: str, last: str, admission: str):
-        self.years = range(2021,2027) # Dynamic years
+    def __init__(self, cuil: str, first: str, last: str, admission: str, area: str):
+        self.years = range(2015,2030) # Dynamic years
         self.cuil = cuil
         self.first = first
         self.last = last
         self.admission = f_check(admission)
+        self.area = area
         self.days_origin_dict = days_origin(self.admission, self.years)
         self.days_origin_list = days_origin(self.admission, self.years, to_list=True)
 
@@ -37,10 +38,11 @@ class Agent():
             'first': self.first,
             'last': self.last,
             'admission': self.admission,
+            'area': self.area
         }
         return z
     
-    def days_available(self,licenses_list: list):
+    def days_available(self,licenses_list: list, to_dict: bool = False):
         # licenses -> [[date_1,days_1], [date_2,days_2], [date_n,days_n]] [['2022-05-23',15],['2023-08-01',5]]
         licenses = sorted(licenses_list, key=lambda x: x[0])
         days_origin_list_copy = copy.deepcopy(self.days_origin_list)
@@ -55,4 +57,6 @@ class Agent():
                         break
                     licenses[license_index][1] -= 1
                     days_origin_list_copy[origin_index][1] -= 1
-        return days_origin_list_copy
+        if not to_dict:
+            return days_origin_list_copy
+        return dict((x[0], x[1]) for x in days_origin_list_copy)

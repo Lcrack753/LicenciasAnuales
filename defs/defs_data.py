@@ -15,7 +15,8 @@ def create_tables(conn, cursor):
                     cuil TEXT UNIQUE,
                     first TEXT,
                     last TEXT,
-                    admission TEXT
+                    admission TEXT,
+                    area TEXT,
                     )""")
 
         # TABLE LICENSES
@@ -63,36 +64,9 @@ def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = Fals
         return rows
 
 
-
-
-# AGENT
-def update_days_origin(conn, cursor, cuil: str, admission):
-    # Obtener los valores actuales de first y last
-    cursor.execute("SELECT first, last FROM agent WHERE cuil = ?", (cuil,))
-    result = cursor.fetchone()
-    if result:
-        first, last = result
-        print(result)
-    else:
-        first, last = 'temp', 'temp'
-
-    z = Agent(cuil, first, last, admission).to_dict()
-
-    with conn:
-        cursor.execute("""UPDATE agent SET
-                        admission = :admission,
-                        year_2021 = :year_2021,
-                        year_2022 = :year_2022,
-                        year_2023 = :year_2023,
-                        year_2024 = :year_2024,
-                        year_2025 = :year_2025,
-                        year_2026 = :year_2026 WHERE cuil = :cuil""",
-                        z)
-
 def push_agent(conn, cursor, obj: Agent):
     with conn:
-        cursor.execute("INSERT INTO agent (cuil, first, last, admission) VALUES (:cuil, :first, :last, :admission)", obj.to_dict())
-        # update_days_origin(conn,cursor,obj.cuil,obj.admission)
+        cursor.execute("INSERT INTO agent (cuil, first, last, admission) VALUES (:cuil, :first, :last, :admission, :area)", obj.to_dict())
 
 
 def fetch_agent(conn, cursor, query = None):
@@ -101,7 +75,7 @@ def fetch_agent(conn, cursor, query = None):
         if query is None:
             cursor.execute(f"SELECT {columns} FROM agent")
             return cursor.fetchall()
-        cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query", {'query': '%' + query + '%'})
+        cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query OR area LIKE :query", {'query': '%' + query + '%'})
         return cursor.fetchall()
 
 
@@ -119,13 +93,6 @@ def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False)
                         end = :end""",
                         obj.to_dict())
 
-def calculate_days_avalible(conn,cursor, cuil: str):
-    with conn:
-        cursor.execute("""SELECT start FROM license WHERE cuil = ?""", (cuil,))
-        rows = cursor.fetchall()
-        dates_order = []
-        for row in rows:
-            dates_order.append(row[0])
         
 
 # Creacion de la base de datos
