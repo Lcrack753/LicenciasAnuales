@@ -1,6 +1,7 @@
 import sqlite3
+import os
+import csv
 from classes import License, Agent
-from defs_time import f_check
 
 def connect_start(database_path):
     conn = sqlite3.connect(database_path)
@@ -93,7 +94,25 @@ def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False)
                         end = :end""",
                         obj.to_dict())
 
-        
+
+def tables_to_csv(conn, cursor):
+    with conn:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        for table in tables:
+            make_csv(table[0], name=f'database_{table[0]}')
+            csv.DictWriter()
+            
+def make_csv(table: list, description, name: str):
+    with open(f'{name}.csv', 'w', newline='') as archivo_csv:
+        escritor_csv = csv.writer(archivo_csv)
+
+        # Escribir los encabezados de columna
+        encabezados = [descripcion[0] for descripcion in description]
+        escritor_csv.writerow(encabezados)
+
+        # Escribir los datos
+        escritor_csv.writerows(table)
 
 # Creacion de la base de datos
 if __name__ == "__main__":

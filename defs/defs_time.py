@@ -35,7 +35,7 @@ def Weekend_check(f: str):
     else:
         raise ValueError('La fecha del fin de la licencia no es Domingo')
 
-
+# return str or Error
 def f_check(f: str):
     formats = [r'%d/%m/%Y', r'%d-%m-%Y', r'%d.%m.%Y', r'%Y-%m-%d']
     for date_format in formats:
@@ -48,7 +48,7 @@ def f_check(f: str):
 
 
 
-# return string
+# return str
 def days_between(f1: str, f2: str):
     date_1 = datetime.strptime(f1, r'%Y-%m-%d')
     date_2 = datetime.strptime(f2, r'%Y-%m-%d')
@@ -74,6 +74,7 @@ def days_origin(admission: str, years: list, to_list: bool = False):
         return days_per_years_list
     return days_per_years_dict
 
+ # return list of str
 def orderby_date(dates: list):
     try:
         date_objects = [datetime.strptime(date, r'%Y-%m-%d') for date in dates]
@@ -85,6 +86,7 @@ def orderby_date(dates: list):
         sorted_dates.append(date.strftime(r'%Y-%m-%d'))
     return sorted_dates
 
+# return bool
 def is_less(f1, f2):
     date_1 = datetime.strptime(f1, r'%Y-%m-%d')
     date_2 = datetime.strptime(f2, r'%Y-%m-%d')
@@ -92,7 +94,8 @@ def is_less(f1, f2):
         return True
     else:
         return False
-    
+
+# return str
 def add_years(f, years: int):
     date = datetime.strptime(f, r'%Y-%m-%d')
     new_date = date + timedelta(days=365 * years)

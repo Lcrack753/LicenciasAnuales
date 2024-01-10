@@ -1,5 +1,6 @@
 from defs_time import *
 import copy
+import os
 
 class License():
     def __init__(self, cuil: str, start: str, end: str, note: str):
@@ -22,7 +23,7 @@ class License():
 
 class Agent():
     def __init__(self, cuil: str, first: str, last: str, admission: str, area: str):
-        self.years = range(2015,2030) # Dynamic years
+        self.years = range(2021,2025) # Dynamic years
         self.cuil = cuil
         self.first = first
         self.last = last
@@ -60,3 +61,4 @@ class Agent():
         if not to_dict:
             return days_origin_list_copy
         return dict((x[0], x[1]) for x in days_origin_list_copy)
+
