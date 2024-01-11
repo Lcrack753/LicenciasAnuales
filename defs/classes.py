@@ -3,7 +3,7 @@ import copy
 import os
 
 class License():
-    def __init__(self, cuil: str, start: str, end: str, note: str):
+    def __init__(self, cuil: str = '', start: str = '', end: str = '', note: str = ''):
         self.cuil = cuil
         self.start = f_check(start)
         self.end = f_check(end)
@@ -22,7 +22,7 @@ class License():
 
 
 class Agent():
-    def __init__(self, cuil: str, first: str, last: str, admission: str, area: str):
+    def __init__(self, cuil: str = '', first: str = '', last: str = '', admission: str = '01/01/2000', area: str = ''):
         self.years = range(2021,2025) # Dynamic years
         self.cuil = cuil
         self.first = first

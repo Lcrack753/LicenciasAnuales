@@ -17,8 +17,9 @@ def create_tables(conn, cursor):
                     first TEXT,
                     last TEXT,
                     admission TEXT,
-                    area TEXT,
+                    area TEXT
                     )""")
+        
 
         # TABLE LICENSES
         cursor.execute("""CREATE TABLE license (
@@ -50,7 +51,7 @@ def push_lisense(conn, cursor, obj: License):
         
         cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
-def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = False):
+def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = False, fetch_headers: bool = False):
     with conn:
         if not cuil == None:
             cursor.execute("SELECT * FROM license WHERE cuil LIKE ?", ('%' + cuil + '%',))
@@ -60,24 +61,33 @@ def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = Fals
             cursor.execute("SELECT * FROM license")
         
         rows = cursor.fetchall()
-        if reduce == True:
+        if reduce:
             return [[row[2], row[4]] for row in rows]
+        if fetch_headers:
+            return [description[0] for description in cursor.description]
         return rows
 
 
 def push_agent(conn, cursor, obj: Agent):
     with conn:
-        cursor.execute("INSERT INTO agent (cuil, first, last, admission) VALUES (:cuil, :first, :last, :admission, :area)", obj.to_dict())
+        cursor.execute("INSERT INTO agent (cuil, first, last, admission, area) VALUES (:cuil, :first, :last, :admission, :area)", obj.to_dict())
 
 
-def fetch_agent(conn, cursor, query = None):
+def fetch_agent(conn, cursor, query=None, fetch_headers=False):
     with conn:
-        columns = 'id, cuil, first, last, admission'
+        columns = 'id, cuil, first, last, admission, area'
+        
         if query is None:
             cursor.execute(f"SELECT {columns} FROM agent")
-            return cursor.fetchall()
-        cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query OR area LIKE :query", {'query': '%' + query + '%'})
-        return cursor.fetchall()
+            result = cursor.fetchall()
+        else:
+            cursor.execute(f"SELECT {columns} FROM agent WHERE cuil LIKE :query OR first LIKE :query OR last LIKE :query OR area LIKE :query", {'query': '%' + query + '%'})
+            result = cursor.fetchall()
+
+        if fetch_headers:
+            return [description[0] for description in cursor.description]
+
+        return result
 
 
 # delete
@@ -98,18 +108,20 @@ def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False)
 def tables_to_csv(conn, cursor):
     with conn:
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()
+        tables = cursor.fetchall()[0]
         for table in tables:
-            make_csv(table[0], name=f'database_{table[0]}')
-            csv.DictWriter()
+            cursor.execute("SELECT * FROM ?", (table))
+            data = cursor.fetchall()
             
-def make_csv(table: list, description, name: str):
+def make_csv(table: list, headers: list = None, name: str = './result'):
     with open(f'{name}.csv', 'w', newline='') as archivo_csv:
         escritor_csv = csv.writer(archivo_csv)
 
-        # Escribir los encabezados de columna
-        encabezados = [descripcion[0] for descripcion in description]
-        escritor_csv.writerow(encabezados)
+        if not headers == None:
+            print(len(headers), len(table[0]))
+            if len(headers) != len(table[0]):
+                raise ValueError('lenght_headers != lenght_table')
+            escritor_csv.writerow(headers)
 
         # Escribir los datos
         escritor_csv.writerows(table)
@@ -120,5 +132,5 @@ if __name__ == "__main__":
         conn, cursor = connect_start('./data/dataBase.db')
         create_tables(conn,cursor)
         connect_end(conn)
-    except sqlite3.OperationalError:
-        print('database already exist')
+    except ValueError:
+        pass
