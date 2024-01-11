@@ -12,6 +12,6 @@ headers = fetch_license(conn,cursor,fetch_headers=True)
 data = fetch_license(conn,cursor)
 
 print(data)
-make_csv(data, headers,'jijijija')
+print(make_html(data, headers))
 connect_end(conn)
 

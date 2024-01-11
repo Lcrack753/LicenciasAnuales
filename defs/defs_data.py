@@ -126,6 +126,18 @@ def make_csv(table: list, headers: list = None, name: str = './result'):
         # Escribir los datos
         escritor_csv.writerows(table)
 
+def make_html(table: list, headers: list = None):    
+    html = f""" <html>
+                <table>
+                    <tr>
+                        {''.join([f'<th>{header}</th>' for header in headers])}
+                    </tr>
+                    {''.join([f'<tr>{"".join([f"<td>{cell}</td>" for cell in row])}</tr>' for row in table])}
+                </table>
+                </html>""".replace(" ", "").replace("\n", "")
+    return html
+
+
 # Creacion de la base de datos
 if __name__ == "__main__":
     try:
