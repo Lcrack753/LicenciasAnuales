@@ -1,12 +1,15 @@
 from defs_time import *
 import copy
 import os
+import random
 
 class License():
-    def __init__(self, cuil: str = '', start: str = '', end: str = '', note: str = ''):
+    def __init__(self, cuil: str = f'{random.randint(1, 9999999999)}', start: str = '01/01/2020', end: str = '02/02/2020', note: str = '-'):
         self.cuil = cuil
         self.start = f_check(start)
         self.end = f_check(end)
+        if is_less(self.end,self.start):
+            raise ValueError('end is less that start')
         self.days_btw = days_between(self.start, self.end)
         self.note = note
     
@@ -22,8 +25,8 @@ class License():
 
 
 class Agent():
-    def __init__(self, cuil: str = '', first: str = '', last: str = '', admission: str = '01/01/2000', area: str = ''):
-        self.years = range(2021,2025) # Dynamic years
+    def __init__(self, cuil: str = f'{random.randint(1, 9999999999)}', first: str = '-', last: str = '-', admission: str = '01/01/2000', area: str = '-'):
+        self.years = range(2021,2027) # Dynamic years
         self.cuil = cuil
         self.first = first
         self.last = last
@@ -43,7 +46,7 @@ class Agent():
         }
         return z
     
-    def days_available(self,licenses_list: list, to_dict: bool = False):
+    def days_available(self,licenses_list: list = [], to_dict: bool = False):
         # licenses -> [[date_1,days_1], [date_2,days_2], [date_n,days_n]] [['2022-05-23',15],['2023-08-01',5]]
         licenses = sorted(licenses_list, key=lambda x: x[0])
         days_origin_list_copy = copy.deepcopy(self.days_origin_list)

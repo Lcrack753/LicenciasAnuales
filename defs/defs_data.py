@@ -3,11 +3,13 @@ import os
 import csv
 from classes import License, Agent
 
+# Connect to dataBase
 def connect_start(database_path):
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
     return conn, cursor
 
+# Creat tables
 def create_tables(conn, cursor):
     with conn:
         # TABLE AGENT
@@ -20,7 +22,6 @@ def create_tables(conn, cursor):
                     area TEXT
                     )""")
         
-
         # TABLE LICENSES
         cursor.execute("""CREATE TABLE license (
                     id INTEGER PRIMARY KEY,
@@ -31,6 +32,7 @@ def create_tables(conn, cursor):
                     note TEXT
                     )""")
 
+# End connection to database
 def connect_end(conn):
     conn.close()
 
@@ -51,6 +53,7 @@ def push_lisense(conn, cursor, obj: License):
         
         cursor.execute("INSERT INTO license (cuil, start, end, days_btw, note) VALUES (:cuil, :start, :end, :days_btw, :note)", obj.to_dict())
 
+
 def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = False, fetch_headers: bool = False):
     with conn:
         if not cuil == None:
@@ -68,6 +71,21 @@ def fetch_license(conn,cursor, cuil: str = None, date: str = None, reduce = Fals
         return rows
 
 
+def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False):
+    with conn:
+        if all_instance_of_cuil == True:
+            cursor.execute("""DELETE FROM license WHERE
+                        cuil = :cuil""",
+                        obj.to_dict())
+        else:
+            cursor.execute("""DELETE FROM license WHERE
+                        cuil = :cuil AND
+                        start = :start AND
+                        end = :end""",
+                        obj.to_dict())
+
+
+# AGENT
 def push_agent(conn, cursor, obj: Agent):
     with conn:
         cursor.execute("INSERT INTO agent (cuil, first, last, admission, area) VALUES (:cuil, :first, :last, :admission, :area)", obj.to_dict())
@@ -90,31 +108,24 @@ def fetch_agent(conn, cursor, query=None, fetch_headers=False):
         return result
 
 
-# delete
-def delete_license(conn,cursor,obj: License, all_instance_of_cuil: bool = False):
-    with conn:
-        if all_instance_of_cuil == True:
-            cursor.execute("""DELETE FROM license WHERE
+
+def delete_agent(conn, cursor, obj: Agent):
+    cursor.execute("""DELETE FROM license WHERE
                         cuil = :cuil""",
-                        obj.to_dict())
-        else:
-            cursor.execute("""DELETE FROM license WHERE
-                        cuil = :cuil AND
-                        start = :start AND
-                        end = :end""",
                         obj.to_dict())
 
 
 def tables_to_csv(conn, cursor):
     with conn:
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()[0]
+        tables = ['agent','license']
         for table in tables:
-            cursor.execute("SELECT * FROM ?", (table))
+            cursor.execute(f"SELECT * FROM {table}")
             data = cursor.fetchall()
+            headers = [description[0] for description in cursor.description]
+            make_csv(data,headers,f'{table}.csv')
             
 def make_csv(table: list, headers: list = None, name: str = './result'):
-    with open(f'{name}.csv', 'w', newline='') as archivo_csv:
+    with open(name, 'w', newline='') as archivo_csv:
         escritor_csv = csv.writer(archivo_csv)
 
         if not headers == None:
