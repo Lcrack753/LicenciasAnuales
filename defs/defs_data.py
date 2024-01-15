@@ -110,9 +110,10 @@ def fetch_agent(conn, cursor, query=None, fetch_headers=False):
 
 
 def delete_agent(conn, cursor, obj: Agent):
-    cursor.execute("""DELETE FROM license WHERE
-                        cuil = :cuil""",
-                        obj.to_dict())
+    with conn:
+        cursor.execute("""DELETE FROM license WHERE
+                            cuil = :cuil""",
+                            obj.to_dict())
 
 
 def tables_to_csv(conn, cursor):
