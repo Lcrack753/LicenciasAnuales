@@ -7,7 +7,7 @@ __pycache__/
 *.pyd
 
 # Carpeta del entorno virtual
-./venv/
+venv
 
 # Archivos de registro y otros archivos generados
 *.log
