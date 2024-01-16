@@ -1,0 +1,22 @@
+# Archivos de caché de Python
+__pycache__/
+
+# Archivos de configuración de Python
+*.pyc
+*.pyo
+*.pyd
+
+# Carpeta del entorno virtual
+./venv/
+
+# Archivos de registro y otros archivos generados
+*.log
+*.db
+*.sqlite3
+
+# Carpeta de archivos estáticos y generados por el usuario
+static/
+media/
+
+# Archivos de configuración específicos del entorno
+.env
