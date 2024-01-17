@@ -3,11 +3,13 @@ import datetime
 from defs.defs_data import *
 
 
-class AgentView(ft.UserControl):
-    def __init__(self):
+
+class AgentTable(ft.UserControl):
+    def __init__(self, query: str = None):
         super().__init__()
         conn, cursor = connect_start('./data/dataBase.db')
-        self.rows = self.fetch(conn,cursor)
+        self.query = query
+        self.rows = self.fetch(conn,cursor,self.query)
         self.table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("Cuil")),
@@ -22,9 +24,10 @@ class AgentView(ft.UserControl):
         connect_end(conn)
     
 
-    def fetch(self,conn,cursor):
+
+    def fetch(self,conn,cursor,query):
         rowlist = []
-        for row in fetch_agent(conn,cursor):
+        for row in fetch_agent(conn,cursor,query=query):
             datarow = ft.DataRow(
                 cells=[
                     ft.DataCell(ft.Text(str(row[1]))),
