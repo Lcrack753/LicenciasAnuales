@@ -1,4 +1,4 @@
-from defs_time import *
+from .defs_time import *
 import copy
 import os
 import random

@@ -1,11 +1,11 @@
 import sqlite3
 import os
 import csv
-from classes import License, Agent
+from .classes import License, Agent
 
 # Connect to dataBase
 def connect_start(database_path):
-    conn = sqlite3.connect(database_path)
+    conn = sqlite3.connect(database_path,check_same_thread=False)
     cursor = conn.cursor()
     return conn, cursor
 
