@@ -1,39 +1,31 @@
 import flet as ft
-from views.AgentTab import AgentTable
-from defs.defs_data import *
-
-
-
+from views.AgentView import *
 
 def main(page: ft.Page):
+    page.title = 'Licencias Anuales'
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.update()
 
-    
-    def search_agent(e):
-        
+    agente_view = AgentView()
+    # license_view = LicenseView()
 
-    txt_query_agent = ft.TextField(label='query', on_change=search_agent)
-
-    tab_general = ft.Tabs(
+    t = ft.Tabs(
         selected_index=0,
-        animation_duration=100,
+        animation_duration=350,
+        tab_alignment=ft.TabAlignment.CENTER,
         tabs=[
             ft.Tab(
-                text="AGENTES",
-                content = ft.Column(
-                    [txt_query_agent,
-                     table_agent]
-                ),
+                text='Agentes',
+                content = agente_view,
             ),
             ft.Tab(
-                text="LICENCIAS",
-            ),
-            ft.Tab(
-                text="DIAS DISPONIBLES"
-            ),
-        ],
-        expand=2
+                text='Licencias',
+                # content=license_view
+            )
+            
+        ]
     )
 
-    page.add(tab_general)  # Access the date_picker attribute
+    page.add(agente_view)
 
 ft.app(target=main)
