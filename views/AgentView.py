@@ -138,68 +138,120 @@ class AgentForm(ft.UserControl):
         self.error_container.visible = False
 
     
+# class AgentTable(ft.UserControl):
+#     def __init__(self):
+#         super().__init__()
+
+#     def build(self):
+        
+#         self.table = ft.DataTable()
+#         self.filter = ft.TextField(label='Filtro', value='', on_change=self.fetch)
+#         # self.lv = ft.ListView(
+#         #     expand=1,
+#         #     auto_scroll=True
+#         # )
+#         return ft.Column(
+#             controls=[
+#                 self.filter,
+#                 self.table
+#             ]
+#         )
+
+    
+#     def fetch(self,e):
+#         conn, cursor = defs_data.connect_start('data/dataBase.db')
+#         fetched_headers = defs_data.fetch_agent(conn,cursor,fetch_headers=True)
+#         fetched_rows = defs_data.fetch_agent(conn,cursor,query=self.filter.value)
+
+#         headers = [ft.DataColumn(ft.Text(header)) for header in fetched_headers]
+#         days_avalible = [
+#             ft.DataColumn(ft.Text('2021')),
+#             ft.DataColumn(ft.Text('2022')),
+#             ft.DataColumn(ft.Text('2023')),
+#             ft.DataColumn(ft.Text('2024')),
+#             ft.DataColumn(ft.Text('2025')),
+#         ]
+#         for col in days_avalible:
+#             headers.append(col)
+
+#         rows = []
+#         for row in fetched_rows:
+#             agent_instance = Agent(row[1],row[2],row[3],row[4],row[5])
+#             fetched_license = defs_data.fetch_license(conn,cursor,agent_instance.cuil,reduce=True)
+#             days = agent_instance.days_available(fetched_license,to_dict=True)
+#             z = ft.DataRow(
+#                 cells=[
+#                     ft.DataCell(ft.Text(agent_instance.cuil)),
+#                     ft.DataCell(ft.Text(agent_instance.first)),
+#                     ft.DataCell(ft.Text(agent_instance.last)),
+#                     ft.DataCell(ft.Text(agent_instance.admission)),
+#                     ft.DataCell(ft.Text(agent_instance.area)),
+#                     ft.DataCell(ft.Text(str(days['2021-12-01']))),
+#                     ft.DataCell(ft.Text(str(days['2022-12-01']))),
+#                     ft.DataCell(ft.Text(str(days['2023-12-01']))),
+#                     ft.DataCell(ft.Text(str(days['2024-12-01']))),
+#                     ft.DataCell(ft.Text(str(days['2025-12-01']))),
+#                 ]
+#             )
+#             rows.append(z)
+
+#         self.table.columns = headers
+#         self.table.rows = rows
+#         defs_data.connect_end(conn)
+        
 class AgentTable(ft.UserControl):
     def __init__(self):
         super().__init__()
     
     def build(self):
-        self.filter = ft.TextField(label='Filtro', value='')
-        self.lv = ft.ListView(
-            expand=1,
-            auto_scroll=True
-        )
-        headers, rows = self.fetch()
-        self.table = ft.DataTable(
-            columns=headers,
-            rows=rows
-        )
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        fetched_rows = defs_data.fetch_agent(conn,cursor)
+        col = ft.Column(width=1200)
+        for row in fetched_rows:
+            col.controls.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5])))
+            col.controls.append(ft.Divider())
+        return col 
+        
 
-        return ft.Column(
-            controls=[
-                self.filter,
-                ft.Column(
-                    controls=headers
-                )
-            ]
-        )
+class AgentRow(ft.UserControl):
+    def __init__(self, agent: Agent, licenses: list() = []):
+        self.agent = agent
+        super().__init__()
+        w = 100
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        fetched_licenses = defs_data.fetch_license(conn,cursor,self.agent.cuil,reduce=True)
+        self.z = self.agent.days_available(fetched_licenses,to_dict=True)
 
     
-    def fetch(self,query = ''):
-        conn, cursor = defs_data.connect_start('data/dataBase.db')
-        fetched_headers = defs_data.fetch_agent(conn,cursor,fetch_headers=True)
-        fetched_rows = defs_data.fetch_agent(conn,cursor,query=query)
-
-        headers = [ft.DataColumn(ft.Text(header)) for header in fetched_headers]
-        days_avalible = [
-            ft.DataColumn(ft.Text('2021')),
-            ft.DataColumn(ft.Text('2022')),
-            ft.DataColumn(ft.Text('2023')),
-            ft.DataColumn(ft.Text('2024')),
-            ft.DataColumn(ft.Text('2025')),
-        ]
-        for col in days_avalible:
-            headers.append(col)
-
-        rows = []
-        for row in fetched_rows:
-            agent_instance = Agent(row[1],row[2],row[3],row[4],row[5])
-            fetched_license = defs_data.fetch_license(conn,cursor,agent_instance.cuil,reduce=True)
-            days = agent_instance.days_available(fetched_license,to_dict=True)
-            z = ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text(agent_instance.cuil)),
-                    ft.DataCell(ft.Text(agent_instance.first)),
-                    ft.DataCell(ft.Text(agent_instance.last)),
-                    ft.DataCell(ft.Text(agent_instance.admission)),
-                    ft.DataCell(ft.Text(agent_instance.area)),
-                    ft.DataCell(ft.Text(str(days['2021-12-01']))),
-                    ft.DataCell(ft.Text(str(days['2022-12-01']))),
-                    ft.DataCell(ft.Text(str(days['2023-12-01']))),
-                    ft.DataCell(ft.Text(str(days['2024-12-01']))),
-                    ft.DataCell(ft.Text(str(days['2025-12-01']))),
-                ]
-            )
-            rows.append(z)
-        headers = [ft.Text(header) for header in fetched_headers]
-        defs_data.connect_end(conn)
-        return headers, rows
+    def build(self):
+        w = 125
+        self.cuil = ft.Text(self.agent.cuil, text_align=ft.TextAlign.CENTER,width=w)
+        self.first = ft.Text(self.agent.first, text_align=ft.TextAlign.CENTER,width=w)
+        self.last = ft.Text(self.agent.last, text_align=ft.TextAlign.CENTER,width=w)
+        self.admission = ft.Text(self.agent.admission, text_align=ft.TextAlign.CENTER,width=w)
+        self.area = ft.Text(self.agent.area, text_align=ft.TextAlign.CENTER,width=w)
+        self.year_2021 = ft.Text(self.z['2021-12-01'], width=w//2)
+        self.year_2022 = ft.Text(self.z['2022-12-01'], width=w//2)
+        self.year_2023 = ft.Text(self.z['2023-12-01'], width=w//2)
+        self.year_2024 = ft.Text(self.z['2024-12-01'], width=w//2)
+        self.year_2025 = ft.Text(self.z['2025-12-01'], width=w//2)
+        self.edit_button = ft.IconButton(icon=ft.icons.EDIT,width=w)
+        self.delete_button = ft.IconButton(icon=ft.icons.DELETE,width=w)
+        
+        return ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    self.cuil,
+                    self.first,
+                    self.last,
+                    self.admission,
+                    self.area,
+                    self.year_2021,
+                    self.year_2022,
+                    self.year_2023,
+                    self.year_2024,
+                    self.year_2025,
+                    self.edit_button,
+                    self.delete_button
+                    ]
+                )
