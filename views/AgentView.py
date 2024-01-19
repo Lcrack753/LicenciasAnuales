@@ -9,12 +9,14 @@ class AgentView(ft.UserControl):
 
     def build(self):
         self.agent_form = AgentForm()
+        self.agent_table = AgentTable()
         return ft.Column(
             controls=[
                 ft.Divider(),
                 ft.IconButton(icon=ft.icons.ADD,
                               on_click=self.add_clicked),
-                self.agent_form
+                self.agent_form,
+                self.agent_table
             ]
         )
     
@@ -60,10 +62,12 @@ class AgentForm(ft.UserControl):
             on_click=self.confirm_clicked
         )
 
-        self.error_text = ft.Text()
+        self.error_text = ft.Text(size=20, text_align=ft.TextAlign.CENTER)
         self.error_container = ft.Container(
             bgcolor=ft.colors.RED,
             visible=False,
+            alignment=ft.alignment.center,
+            padding=5,
             content=self.error_text
         )
 
@@ -100,32 +104,102 @@ class AgentForm(ft.UserControl):
         pass
 
     def close_clicked(self, e):
-        self.txt_cuil.value = ""
-        self.txt_first.value = ""
-        self.txt_last.value = ""
-        self.txt_area.value = ""
-        self.txt_admission.value = ""
+        self.clean(e)
         self.visible = False
         self.disabled = True
         self.update()
     
     def confirm_clicked(self,e):
         try:
+            if self.txt_cuil.value == '' and len(self.txt_cuil.value) != 11 and self.txt_admission.value == '':
+                raise ValueError('')
             agent_instance = Agent(
                 cuil=self.txt_cuil.value,
                 first=self.txt_first.value,
                 last=self.txt_last.value,
-                admission=self.txt_admission.value
+                admission=self.txt_admission.value,
+                area=self.txt_area.value
             )
-
             conn, cursor = defs_data.connect_start('data/dataBase.db')
             defs_data.push_agent(conn,cursor,agent_instance)
             defs_data.connect_end(conn)
+            self.clean(e)
         except ValueError:
-            self.error_text.value = ValueError
+            self.error_text.value = 'Datos Invalidos'
             self.error_container.visible = True
             self.update()
 
+    def clean(self,e):
+        self.txt_cuil.value = ""
+        self.txt_first.value = ""
+        self.txt_last.value = ""
+        self.txt_area.value = ""
+        self.txt_admission.value = ""
+        self.error_container.visible = False
 
     
+class AgentTable(ft.UserControl):
+    def __init__(self):
+        super().__init__()
     
+    def build(self):
+        self.filter = ft.TextField(label='Filtro', value='')
+        self.lv = ft.ListView(
+            expand=1,
+            auto_scroll=True
+        )
+        headers, rows = self.fetch()
+        self.table = ft.DataTable(
+            columns=headers,
+            rows=rows
+        )
+
+        return ft.Column(
+            controls=[
+                self.filter,
+                ft.Column(
+                    controls=headers
+                )
+            ]
+        )
+
+    
+    def fetch(self,query = ''):
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        fetched_headers = defs_data.fetch_agent(conn,cursor,fetch_headers=True)
+        fetched_rows = defs_data.fetch_agent(conn,cursor,query=query)
+
+        headers = [ft.DataColumn(ft.Text(header)) for header in fetched_headers]
+        days_avalible = [
+            ft.DataColumn(ft.Text('2021')),
+            ft.DataColumn(ft.Text('2022')),
+            ft.DataColumn(ft.Text('2023')),
+            ft.DataColumn(ft.Text('2024')),
+            ft.DataColumn(ft.Text('2025')),
+        ]
+        for col in days_avalible:
+            headers.append(col)
+
+        rows = []
+        for row in fetched_rows:
+            agent_instance = Agent(row[1],row[2],row[3],row[4],row[5])
+            fetched_license = defs_data.fetch_license(conn,cursor,agent_instance.cuil,reduce=True)
+            days = agent_instance.days_available(fetched_license,to_dict=True)
+            z = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(agent_instance.cuil)),
+                    ft.DataCell(ft.Text(agent_instance.first)),
+                    ft.DataCell(ft.Text(agent_instance.last)),
+                    ft.DataCell(ft.Text(agent_instance.admission)),
+                    ft.DataCell(ft.Text(agent_instance.area)),
+                    ft.DataCell(ft.Text(str(days['2021-12-01']))),
+                    ft.DataCell(ft.Text(str(days['2022-12-01']))),
+                    ft.DataCell(ft.Text(str(days['2023-12-01']))),
+                    ft.DataCell(ft.Text(str(days['2024-12-01']))),
+                    ft.DataCell(ft.Text(str(days['2025-12-01']))),
+                ]
+            )
+            rows.append(z)
+        headers = [ft.Text(header) for header in fetched_headers]
+        defs_data.connect_end(conn)
+        return headers, rows
