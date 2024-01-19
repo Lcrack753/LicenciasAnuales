@@ -137,67 +137,7 @@ class AgentForm(ft.UserControl):
         self.txt_admission.value = ""
         self.error_container.visible = False
 
-    
-# class AgentTable(ft.UserControl):
-#     def __init__(self):
-#         super().__init__()
 
-#     def build(self):
-        
-#         self.table = ft.DataTable()
-#         self.filter = ft.TextField(label='Filtro', value='', on_change=self.fetch)
-#         # self.lv = ft.ListView(
-#         #     expand=1,
-#         #     auto_scroll=True
-#         # )
-#         return ft.Column(
-#             controls=[
-#                 self.filter,
-#                 self.table
-#             ]
-#         )
-
-    
-#     def fetch(self,e):
-#         conn, cursor = defs_data.connect_start('data/dataBase.db')
-#         fetched_headers = defs_data.fetch_agent(conn,cursor,fetch_headers=True)
-#         fetched_rows = defs_data.fetch_agent(conn,cursor,query=self.filter.value)
-
-#         headers = [ft.DataColumn(ft.Text(header)) for header in fetched_headers]
-#         days_avalible = [
-#             ft.DataColumn(ft.Text('2021')),
-#             ft.DataColumn(ft.Text('2022')),
-#             ft.DataColumn(ft.Text('2023')),
-#             ft.DataColumn(ft.Text('2024')),
-#             ft.DataColumn(ft.Text('2025')),
-#         ]
-#         for col in days_avalible:
-#             headers.append(col)
-
-#         rows = []
-#         for row in fetched_rows:
-#             agent_instance = Agent(row[1],row[2],row[3],row[4],row[5])
-#             fetched_license = defs_data.fetch_license(conn,cursor,agent_instance.cuil,reduce=True)
-#             days = agent_instance.days_available(fetched_license,to_dict=True)
-#             z = ft.DataRow(
-#                 cells=[
-#                     ft.DataCell(ft.Text(agent_instance.cuil)),
-#                     ft.DataCell(ft.Text(agent_instance.first)),
-#                     ft.DataCell(ft.Text(agent_instance.last)),
-#                     ft.DataCell(ft.Text(agent_instance.admission)),
-#                     ft.DataCell(ft.Text(agent_instance.area)),
-#                     ft.DataCell(ft.Text(str(days['2021-12-01']))),
-#                     ft.DataCell(ft.Text(str(days['2022-12-01']))),
-#                     ft.DataCell(ft.Text(str(days['2023-12-01']))),
-#                     ft.DataCell(ft.Text(str(days['2024-12-01']))),
-#                     ft.DataCell(ft.Text(str(days['2025-12-01']))),
-#                 ]
-#             )
-#             rows.append(z)
-
-#         self.table.columns = headers
-#         self.table.rows = rows
-#         defs_data.connect_end(conn)
         
 class AgentTable(ft.UserControl):
     def __init__(self):
