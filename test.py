@@ -8,7 +8,7 @@ agente = fetch_agent(conn,cursor,'20446415108')
 
 obj = Agent(agente[0][1],admission=agente[0][4])
 
-print(agente)
-print(obj.to_dict())
-print(obj.days_available(to_dict=True))
+
+# push_lisense(conn,cursor,License('20','20/06/2025','30/06/2025'))
+print(fetch_license(conn,cursor))
 # print(fetch_license(conn,cursor,reduce=True))

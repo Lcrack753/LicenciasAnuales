@@ -206,52 +206,67 @@ class AgentTable(ft.UserControl):
     def build(self):
         conn, cursor = defs_data.connect_start('data/dataBase.db')
         fetched_rows = defs_data.fetch_agent(conn,cursor)
-        col = ft.Column(width=1200)
-        for row in fetched_rows:
-            col.controls.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5])))
-            col.controls.append(ft.Divider())
-        return col 
+        self.agent_table = ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text('Cuil')),
+                ft.DataColumn(ft.Text('Nombre')),
+                ft.DataColumn(ft.Text('Apellido')),
+                ft.DataColumn(ft.Text('Ingreso')),
+                ft.DataColumn(ft.Text('Area')),
+                ft.DataColumn(ft.Text('Dias 2021')),
+                ft.DataColumn(ft.Text('Dias 2022')),
+                ft.DataColumn(ft.Text('Dias 2023')),
+                ft.DataColumn(ft.Text('Dias 2024')),
+                ft.DataColumn(ft.Text('Dias 2025')),
+                ft.DataColumn(ft.Text('Editar')),
+                ft.DataColumn(ft.Text('Eliminar'))
+            ]
+        )
         
+        for row in fetched_rows:
+            self.agent_table.rows.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5])).build())
+        return ft.Column(
+            controls=[
+                ft.TextField(),
+                self.agent_table
+            ]
+        )
 
 class AgentRow(ft.UserControl):
     def __init__(self, agent: Agent, licenses: list() = []):
         self.agent = agent
         super().__init__()
-        w = 100
         conn, cursor = defs_data.connect_start('data/dataBase.db')
         fetched_licenses = defs_data.fetch_license(conn,cursor,self.agent.cuil,reduce=True)
         self.z = self.agent.days_available(fetched_licenses,to_dict=True)
-
     
     def build(self):
-        w = 125
-        self.cuil = ft.Text(self.agent.cuil, text_align=ft.TextAlign.CENTER,width=w)
-        self.first = ft.Text(self.agent.first, text_align=ft.TextAlign.CENTER,width=w)
-        self.last = ft.Text(self.agent.last, text_align=ft.TextAlign.CENTER,width=w)
-        self.admission = ft.Text(self.agent.admission, text_align=ft.TextAlign.CENTER,width=w)
-        self.area = ft.Text(self.agent.area, text_align=ft.TextAlign.CENTER,width=w)
-        self.year_2021 = ft.Text(self.z['2021-12-01'], width=w//2)
-        self.year_2022 = ft.Text(self.z['2022-12-01'], width=w//2)
-        self.year_2023 = ft.Text(self.z['2023-12-01'], width=w//2)
-        self.year_2024 = ft.Text(self.z['2024-12-01'], width=w//2)
-        self.year_2025 = ft.Text(self.z['2025-12-01'], width=w//2)
-        self.edit_button = ft.IconButton(icon=ft.icons.EDIT,width=w)
-        self.delete_button = ft.IconButton(icon=ft.icons.DELETE,width=w)
+        self.cuil = ft.Text(self.agent.cuil)
+        self.first = ft.Text(self.agent.first)
+        self.last = ft.Text(self.agent.last)
+        self.admission = ft.Text(self.agent.admission)
+        self.area = ft.Text(self.agent.area)
+        self.year_2021 = ft.Text(self.z['2021-12-01'])
+        self.year_2022 = ft.Text(self.z['2022-12-01'])
+        self.year_2023 = ft.Text(self.z['2023-12-01'])
+        self.year_2024 = ft.Text(self.z['2024-12-01'])
+        self.year_2025 = ft.Text(self.z['2025-12-01'])
+        self.edit_button = ft.IconButton(icon=ft.icons.EDIT)
+        self.delete_button = ft.IconButton(icon=ft.icons.DELETE)
         
-        return ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER,
-                controls=[
-                    self.cuil,
-                    self.first,
-                    self.last,
-                    self.admission,
-                    self.area,
-                    self.year_2021,
-                    self.year_2022,
-                    self.year_2023,
-                    self.year_2024,
-                    self.year_2025,
-                    self.edit_button,
-                    self.delete_button
-                    ]
-                )
+        return ft.DataRow(
+            cells=[
+                ft.DataCell(ft.Text(self.agent.cuil)),
+                ft.DataCell(ft.Text(self.agent.first)),
+                ft.DataCell(ft.Text(self.agent.last)),
+                ft.DataCell(ft.Text(self.agent.admission)),
+                ft.DataCell(ft.Text(self.agent.area)),
+                ft.DataCell(ft.Text(self.z['2021-12-01'])),
+                ft.DataCell(ft.Text(self.z['2022-12-01'])),
+                ft.DataCell(ft.Text(self.z['2023-12-01'])),
+                ft.DataCell(ft.Text(self.z['2024-12-01'])),
+                ft.DataCell(ft.Text(self.z['2025-12-01'])),
+                ft.DataCell(self.edit_button),
+                ft.DataCell(self.delete_button)
+            ]
+        )
