@@ -124,7 +124,9 @@ class AgentForm(ft.UserControl):
             defs_data.push_agent(conn,cursor,agent_instance)
             defs_data.connect_end(conn)
             self.clean(e)
+            self.update()
         except ValueError:
+            self.clean(e)
             self.error_text.value = 'Datos Invalidos'
             self.error_container.visible = True
             self.update()
@@ -144,8 +146,7 @@ class AgentTable(ft.UserControl):
         super().__init__()
     
     def build(self):
-        conn, cursor = defs_data.connect_start('data/dataBase.db')
-        fetched_rows = defs_data.fetch_agent(conn,cursor)
+        self.query_txt =  ft.TextField(label='Filtro',on_change=self.query_changed)
         self.agent_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text('Cuil')),
@@ -158,27 +159,48 @@ class AgentTable(ft.UserControl):
                 ft.DataColumn(ft.Text('Dias 2023')),
                 ft.DataColumn(ft.Text('Dias 2024')),
                 ft.DataColumn(ft.Text('Dias 2025')),
-                ft.DataColumn(ft.Text('Editar')),
+                # ft.DataColumn(ft.Text('Editar')),
                 ft.DataColumn(ft.Text('Eliminar'))
             ]
         )
-        
-        for row in fetched_rows:
-            self.agent_table.rows.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5])).build())
+        self.update_table()
         return ft.Column(
             controls=[
-                ft.TextField(),
-                self.agent_table
+                self.query_txt,
+                ft.ListView(
+                    height=250,
+                    controls=[self.agent_table]
+                )
             ]
         )
+    
+    def delete_agent(self,agent):
+        conn, cursor = defs_data.connect_start('./data/dataBase.db')
+        defs_data.delete_agent(conn,cursor,agent.agent)
+        defs_data.connect_end(conn)
+        self.update_table()
+        self.update()
+        print('Agente Borrado')
+    
+    def update_table(self,query = ''):
+        self.agent_table.rows.clear()
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        fetched_rows = defs_data.fetch_agent(conn,cursor,self.query_txt.value)
+        for row in fetched_rows:
+            self.agent_table.rows.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5]),self.delete_agent).build())
 
+    def query_changed(self,e):
+        self.update_table()
+        self.update()
+        
 class AgentRow(ft.UserControl):
-    def __init__(self, agent: Agent, licenses: list() = []):
+    def __init__(self, agent: Agent,delete_agent):
         self.agent = agent
         super().__init__()
         conn, cursor = defs_data.connect_start('data/dataBase.db')
         fetched_licenses = defs_data.fetch_license(conn,cursor,self.agent.cuil,reduce=True)
         self.z = self.agent.days_available(fetched_licenses,to_dict=True)
+        self.delete_agent = delete_agent
     
     def build(self):
         self.cuil = ft.Text(self.agent.cuil)
@@ -191,8 +213,8 @@ class AgentRow(ft.UserControl):
         self.year_2023 = ft.Text(self.z['2023-12-01'])
         self.year_2024 = ft.Text(self.z['2024-12-01'])
         self.year_2025 = ft.Text(self.z['2025-12-01'])
-        self.edit_button = ft.IconButton(icon=ft.icons.EDIT)
-        self.delete_button = ft.IconButton(icon=ft.icons.DELETE)
+        # self.edit_button = ft.IconButton(icon=ft.icons.EDIT)
+        self.delete_button = ft.IconButton(icon=ft.icons.DELETE, on_click=self.delete_clicked)
         
         return ft.DataRow(
             cells=[
@@ -206,7 +228,10 @@ class AgentRow(ft.UserControl):
                 ft.DataCell(ft.Text(self.z['2023-12-01'])),
                 ft.DataCell(ft.Text(self.z['2024-12-01'])),
                 ft.DataCell(ft.Text(self.z['2025-12-01'])),
-                ft.DataCell(self.edit_button),
+                # ft.DataCell(self.edit_button),
                 ft.DataCell(self.delete_button)
             ]
         )
+    
+    def delete_clicked(self,e):
+        self.delete_agent(self)

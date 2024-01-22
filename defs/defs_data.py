@@ -111,7 +111,7 @@ def fetch_agent(conn, cursor, query=None, fetch_headers=False):
 
 def delete_agent(conn, cursor, obj: Agent):
     with conn:
-        cursor.execute("""DELETE FROM license WHERE
+        cursor.execute("""DELETE FROM agent WHERE
                             cuil = :cuil""",
                             obj.to_dict())
 
