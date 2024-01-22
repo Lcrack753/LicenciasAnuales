@@ -8,30 +8,43 @@ class AgentView(ft.UserControl):
         super().__init__()
 
     def build(self):
-        self.agent_form = AgentForm()
-        self.agent_table = AgentTable()
-        return ft.Column(
-            controls=[
-                ft.Divider(),
-                ft.IconButton(icon=ft.icons.ADD,
-                              on_click=self.add_clicked),
-                self.agent_form,
-                self.agent_table
-            ]
-        )
+        self.add_agent_button = ft.ElevatedButton('AÑADIR AGENTE', on_click=self.add_agent)
+        self.view_agents_button = ft.ElevatedButton('VER AGENTES', on_click=self.view_agent)
+        self.add_licenses_button = ft.ElevatedButton('AÑADIR LICENCIA')
+        self.view_licenses_button = ft.ElevatedButton('VER LICENCIAS')
+        self.buttons = ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[
+                        self.add_agent_button,
+                        self.view_agents_button,
+                        ft.Divider(),
+                        self.add_licenses_button,
+                        self.view_licenses_button
+                    ]
+            )
+        self.view = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        self.view.controls.append(self.buttons)
+        return self.view
     
-    def add_clicked(self,e):
-        self.agent_form.visible = True
-        self.agent_form.disabled = False
-        self.agent_form.txt_cuil.focus()
-        self.update()
+    def add_agent(self,e):
+        self.agent_form = AgentForm()
+        self.view.controls.clear()
+        self.view.controls.append(self.buttons)
+        self.view.controls.append(ft.Divider())
+        self.view.controls.append(self.agent_form)
+        self.view.update()
 
+    def view_agent(self,e):
+        self.agent_table = AgentTable()
+        self.view.controls.clear()
+        self.view.controls.append(self.buttons)
+        self.view.controls.append(ft.Divider())
+        self.view.controls.append(self.agent_table)
+        self.view.update()
 
 class AgentForm(ft.UserControl):
     def __init__(self):
         super().__init__()
-        self.visible = False
-        self.disabled = True
 
     def build(self):
         self.txt_cuil = ft.TextField(label='Cuil')
@@ -64,7 +77,6 @@ class AgentForm(ft.UserControl):
 
         self.error_text = ft.Text(size=20, text_align=ft.TextAlign.CENTER)
         self.error_container = ft.Container(
-            bgcolor=ft.colors.RED,
             visible=False,
             alignment=ft.alignment.center,
             padding=5,
@@ -88,7 +100,7 @@ class AgentForm(ft.UserControl):
                     ft.Row(
                         alignment=ft.MainAxisAlignment.END,
                         controls=[
-                            self.close_button,
+                            # self.close_button,
                             self.confirm_button
                         ]
                     ),
@@ -105,8 +117,6 @@ class AgentForm(ft.UserControl):
 
     def close_clicked(self, e):
         self.clean(e)
-        self.visible = False
-        self.disabled = True
         self.update()
     
     def confirm_clicked(self,e):
@@ -124,9 +134,14 @@ class AgentForm(ft.UserControl):
             defs_data.push_agent(conn,cursor,agent_instance)
             defs_data.connect_end(conn)
             self.clean(e)
+            self.error_text.value = 'Agente Cargado'
+            self.error_container.bgcolor = ft.colors.GREEN
+            self.error_container.visible = True
+            self.update()
             self.update()
         except ValueError:
             self.clean(e)
+            self.error_container.bgcolor = ft.colors.RED
             self.error_text.value = 'Datos Invalidos'
             self.error_container.visible = True
             self.update()
