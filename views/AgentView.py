@@ -270,8 +270,8 @@ class LicenseView(ft.UserControl):
         super().__init__()
         self.agent_obj = obj.agent
         
-
     def build(self):
+        self.add_license_button = ft.OutlinedButton('Agregar', on_click=self.add_license_clicked)
         self.license_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text('Desde')),
@@ -294,10 +294,9 @@ class LicenseView(ft.UserControl):
 
         self.view = ft.Column(
             width=600,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.START,
             controls=[
                 ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Text('Cuil:',
                                 weight=ft.FontWeight.BOLD),
@@ -305,7 +304,6 @@ class LicenseView(ft.UserControl):
                     ]
                 ),
                 ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Text('Nombre:',
                                 weight=ft.FontWeight.BOLD),
@@ -313,7 +311,6 @@ class LicenseView(ft.UserControl):
                     ]
                 ),
                 ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Text('Ingreso:',
                                 weight=ft.FontWeight.BOLD),
@@ -323,11 +320,20 @@ class LicenseView(ft.UserControl):
                 ft.ListView(
                     height=300,
                     controls=[self.license_table]
-                )
+                ),
+                self.add_license_button,
             ]
         )
 
-        return self.view
+        self.add = LicenseAdd(self.agent_obj)
+        self.add.visible = False
+
+        return ft.Column(
+            controls=[
+                self.view,
+                self.add
+            ]
+        )
     
     def did_mount(self):
         self.update_table()
@@ -349,6 +355,11 @@ class LicenseView(ft.UserControl):
             for row in fetched_licenses:
                 self.license_table.rows.append(LicenseRow(row,self.delete_license).build())
         self.update()
+
+    def add_license_clicked(self,e):
+        self.view.visible = False
+        self.add.visible = True
+        self.update() 
     
     
 class LicenseRow(ft.UserControl):
@@ -377,4 +388,65 @@ class LicenseRow(ft.UserControl):
     def delete(self,e):
         self.delete_license(self)
 
-    
+class LicenseAdd(ft.UserControl):
+    def __init__(self, e):
+        super().__init__()
+        self.agent = e
+
+    def build(self):
+        self.cuil_txt = ft.TextField(label='Cuil',disabled=True, value=self.agent.cuil)
+        self.start_txt = ft.TextField(label='Desde', expand=1)
+        self.end_txt = ft.TextField(label='Hasta', expand=1)
+        self.note_txt = ft.TextField(label='Nota')
+
+        self.start_picker = ft.DatePicker(
+            on_change=self.change_date_start,
+            first_date=datetime.datetime(2023, 10, 1),
+            last_date=datetime.datetime(2024, 10, 1),
+        )
+        self.end_picker = ft.DatePicker(
+            on_change=self.change_date_end,
+            first_date=datetime.datetime(2023, 10, 1),
+            last_date=datetime.datetime(2024, 10, 1),
+        )
+
+        self.start_button = ft.ElevatedButton(
+            "Pick date",
+            icon=ft.icons.CALENDAR_MONTH,
+            on_click=lambda _: self.start_picker.pick_date(),
+        )
+        self.end_button = ft.ElevatedButton(
+            "Pick date",
+            icon=ft.icons.CALENDAR_MONTH,
+            on_click=lambda _: self.end_picker.pick_date(),
+        )
+
+        return ft.Column(
+            width=400,
+            controls=[
+                self.cuil_txt,
+                ft.Row(
+                    controls=[
+                        self.start_txt,
+                        self.start_picker,
+                        self.start_button
+                    ]
+                ),
+                ft.Row(
+                    controls=[
+                        self.end_txt,
+                        self.end_picker,
+                        self.end_button
+                    ]
+                ),
+                self.note_txt
+            ]
+        )
+
+    def change_date_end(self,e):
+        self.end_txt.value = self.end_picker.value.strftime(r'%d/%m/%Y')
+        self.update()
+
+    def change_date_start(self,e):
+        self.start_txt.value = self.start_picker.value.strftime(r'%d/%m/%Y')
+        self.update()
