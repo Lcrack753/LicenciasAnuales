@@ -192,7 +192,7 @@ class AgentTable(ft.UserControl):
             controls=[
                 self.query_txt,
                 ft.ListView(
-                    height=250,
+                    height=600,
                     controls=[self.agent_table]
                 )
             ]
@@ -293,9 +293,11 @@ class LicenseView(ft.UserControl):
         )
 
         self.view = ft.Column(
+            width=600,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Text('Cuil:',
                                 weight=ft.FontWeight.BOLD),
@@ -303,6 +305,7 @@ class LicenseView(ft.UserControl):
                     ]
                 ),
                 ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Text('Nombre:',
                                 weight=ft.FontWeight.BOLD),
@@ -317,7 +320,10 @@ class LicenseView(ft.UserControl):
                         ft.Text(self.agent_obj.admission)
                     ]
                 ),
-                self.license_table
+                ft.ListView(
+                    height=300,
+                    controls=[self.license_table]
+                )
             ]
         )
 
