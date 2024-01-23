@@ -1,6 +1,6 @@
 import flet as ft
 import defs.defs_data as defs_data
-from defs.classes import Agent
+from defs.classes import Agent, License
 import datetime
 
 class AgentView(ft.UserControl):
@@ -35,11 +35,19 @@ class AgentView(ft.UserControl):
         self.view.update()
 
     def view_agent(self,e):
-        self.agent_table = AgentTable()
+        self.agent_table = AgentTable(self.view_detail)
         self.view.controls.clear()
         self.view.controls.append(self.buttons)
         self.view.controls.append(ft.Divider())
         self.view.controls.append(self.agent_table)
+        self.view.update()
+
+    def view_detail(self,e):
+        self.license_view = LicenseView(e)
+        self.view.controls.clear()
+        self.view.controls.append(self.buttons)
+        self.view.controls.append(ft.Divider())
+        self.view.controls.append(self.license_view)
         self.view.update()
 
 class AgentForm(ft.UserControl):
@@ -157,8 +165,9 @@ class AgentForm(ft.UserControl):
 
         
 class AgentTable(ft.UserControl):
-    def __init__(self):
+    def __init__(self, detail):
         super().__init__()
+        self.detail = detail
     
     def build(self):
         self.query_txt =  ft.TextField(label='Filtro',on_change=self.query_changed)
@@ -174,7 +183,7 @@ class AgentTable(ft.UserControl):
                 ft.DataColumn(ft.Text('Dias 2023')),
                 ft.DataColumn(ft.Text('Dias 2024')),
                 ft.DataColumn(ft.Text('Dias 2025')),
-                # ft.DataColumn(ft.Text('Editar')),
+                ft.DataColumn(ft.Text('Detalle')),
                 ft.DataColumn(ft.Text('Eliminar'))
             ]
         )
@@ -202,20 +211,21 @@ class AgentTable(ft.UserControl):
         conn, cursor = defs_data.connect_start('data/dataBase.db')
         fetched_rows = defs_data.fetch_agent(conn,cursor,self.query_txt.value)
         for row in fetched_rows:
-            self.agent_table.rows.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5]),self.delete_agent).build())
+            self.agent_table.rows.append(AgentRow(Agent(row[1],row[2],row[3],row[4],row[5]),self.delete_agent, self.detail).build())
 
     def query_changed(self,e):
         self.update_table()
         self.update()
         
 class AgentRow(ft.UserControl):
-    def __init__(self, agent: Agent,delete_agent):
+    def __init__(self, agent: Agent,delete_agent,detail):
         self.agent = agent
         super().__init__()
         conn, cursor = defs_data.connect_start('data/dataBase.db')
         fetched_licenses = defs_data.fetch_license(conn,cursor,self.agent.cuil,reduce=True)
         self.z = self.agent.days_available(fetched_licenses,to_dict=True)
         self.delete_agent = delete_agent
+        self.detail = detail
     
     def build(self):
         self.cuil = ft.Text(self.agent.cuil)
@@ -228,7 +238,7 @@ class AgentRow(ft.UserControl):
         self.year_2023 = ft.Text(self.z['2023-12-01'])
         self.year_2024 = ft.Text(self.z['2024-12-01'])
         self.year_2025 = ft.Text(self.z['2025-12-01'])
-        # self.edit_button = ft.IconButton(icon=ft.icons.EDIT)
+        self.edit_button = ft.IconButton(icon=ft.icons.REMOVE_RED_EYE, on_click=self.detail_clicked)
         self.delete_button = ft.IconButton(icon=ft.icons.DELETE, on_click=self.delete_clicked)
         
         return ft.DataRow(
@@ -243,10 +253,122 @@ class AgentRow(ft.UserControl):
                 ft.DataCell(ft.Text(self.z['2023-12-01'])),
                 ft.DataCell(ft.Text(self.z['2024-12-01'])),
                 ft.DataCell(ft.Text(self.z['2025-12-01'])),
-                # ft.DataCell(self.edit_button),
+                ft.DataCell(self.edit_button),
                 ft.DataCell(self.delete_button)
             ]
         )
     
     def delete_clicked(self,e):
         self.delete_agent(self)
+
+    def detail_clicked(self,e):
+        self.detail(self)
+
+
+class LicenseView(ft.UserControl):
+    def __init__(self, obj):
+        super().__init__()
+        self.agent_obj = obj.agent
+        
+
+    def build(self):
+        self.license_table = ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text('Desde')),
+                ft.DataColumn(ft.Text('Hasta')),
+                ft.DataColumn(ft.Text('Dias')),
+                ft.DataColumn(ft.Text('Nota')),
+                ft.DataColumn(ft.Text('Eliminar')),
+            ],
+            rows=[
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text('prueba')),
+                        ft.DataCell(ft.Text('prueba')),
+                        ft.DataCell(ft.Text('prueba')),
+                        ft.DataCell(ft.Text('prueba')),
+                    ]
+                )
+            ]
+        )
+
+        self.view = ft.Column(
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Row(
+                    controls=[
+                        ft.Text('Cuil:',
+                                weight=ft.FontWeight.BOLD),
+                        ft.Text(self.agent_obj.cuil)
+                    ]
+                ),
+                ft.Row(
+                    controls=[
+                        ft.Text('Nombre:',
+                                weight=ft.FontWeight.BOLD),
+                        ft.Text(f"{self.agent_obj.last}, {self.agent_obj.first}")
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[
+                        ft.Text('Ingreso:',
+                                weight=ft.FontWeight.BOLD),
+                        ft.Text(self.agent_obj.admission)
+                    ]
+                ),
+                self.license_table
+            ]
+        )
+
+        return self.view
+    
+    def did_mount(self):
+        self.update_table()
+
+
+    def delete_license(self,e):
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        defs_data.delete_license(conn,cursor,License(e.cuil,e.start,e.end))
+        defs_data.connect_end(conn)
+        self.update_table()
+        self.update()
+        print('Licencia Eliminada')
+    
+    def update_table(self):
+        conn, cursor = defs_data.connect_start('data/dataBase.db')
+        fetched_licenses = defs_data.fetch_license(conn,cursor,self.agent_obj.cuil)
+        self.license_table.rows.clear()
+        if len(fetched_licenses) > 0:
+            for row in fetched_licenses:
+                self.license_table.rows.append(LicenseRow(row,self.delete_license).build())
+        self.update()
+    
+    
+class LicenseRow(ft.UserControl):
+    def __init__(self, license_tuple, delete):
+        super().__init__()
+        self.delete_license = delete
+        self.cuil = license_tuple[1]
+        self.start = license_tuple[2]
+        self.end = license_tuple[3]
+        self.days_btw = license_tuple[4]
+        self.note = license_tuple[5]
+
+
+    def build(self):
+        return ft.DataRow(
+            cells=[
+                ft.DataCell(ft.Text(self.start)),
+                ft.DataCell(ft.Text(self.end)),
+                ft.DataCell(ft.Text(self.days_btw)),
+                ft.DataCell(ft.Text(self.note)),
+                ft.DataCell(ft.IconButton(icon=ft.icons.DELETE,
+                                          on_click=self.delete))
+            ]
+        )
+    
+    def delete(self,e):
+        self.delete_license(self)
+
+    
